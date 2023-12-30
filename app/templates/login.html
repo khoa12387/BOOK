@@ -1,0 +1,24 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Đăng nhập{% endblock %}
+
+{% block content %}
+
+<div id="wrapper">
+        <form method="post" action="" id="form-login">
+            <h1 class="form-heading">Form đăng nhập</h1>
+            <div class="form-group">
+                <i class="far fa-user"></i>
+                <input type="text" class="form-input"  id="username" placeholder="Tên đăng nhập" name="username">
+            </div>
+            <div class="form-group">
+                <i class="fas fa-key"></i>
+                <input type="password" class="form-input" id="password" placeholder="Mật khẩu" name="password">
+                <div id="eye">
+                    <i class="far fa-eye" onclick="password()"></i>
+                </div>
+            </div>
+            <input type="submit" value="Đăng nhập" class="form-submit">
+        </form>
+    </div>
+{% endblock %}

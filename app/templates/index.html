@@ -1,0 +1,28 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Trang chủ{% endblock %}
+
+{% block content %}
+<section class="container" >
+    <ul class="pagination mt-1">
+        {% for i in range(pages) %}
+        <li class="page-item"><a class="page-link" href="/?page={{ i + 1 }}">{{ i + 1 }}</a></li>
+        {% endfor %}
+    </ul>
+    <div class="row" >
+        {% for p in products %}
+        <div class="col-xs-12 col-md-3" style="padding: 5px;">
+            <div class="card" >
+                <img class="card-img-top" src="{{ p.image }}" alt="Card image">
+                <div class="card-body" style="background: linear-gradient(to left, rgba(14, 111, 164, 0), rgb(22, 132, 138)) ">
+                    <h4 class="card-title">{{ p.name }}</h4>
+                    <p class="card-text">{{ "{:,.0f}".format(p.price) }} VNĐ</p>
+                    <a href="#" class="btn btn-danger"> Chi tiết</a>
+                    <a href="javascript:;" onclick="addToCart({{p.id}}, '{{p.name}}', {{p.price}})" class="btn btn-info"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Thêm vào giỏ</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
