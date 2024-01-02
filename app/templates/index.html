@@ -17,7 +17,7 @@
                 <div class="card-body" style="background: linear-gradient(to left, rgba(14, 111, 164, 0), rgb(22, 132, 138)) ">
                     <h4 class="card-title">{{ p.name }}</h4>
                     <p class="card-text">{{ "{:,.0f}".format(p.price) }} VNĐ</p>
-                    <a href="#" class="btn btn-danger"> Chi tiết</a>
+                    <a href="/cart" onclick="addToCart({{p.id}}, '{{p.name}}', {{p.price}})" class="btn btn-danger"> Mua Ngay </a>
                     <a href="javascript:;" onclick="addToCart({{p.id}}, '{{p.name}}', {{p.price}})" class="btn btn-info"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Thêm vào giỏ</a>
                 </div>
             </div>
@@ -25,4 +25,5 @@
         {% endfor %}
     </div>
 </section>
+
 {% endblock %}
