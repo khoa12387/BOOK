@@ -73,6 +73,7 @@ function pay() {
         }).then(res => res.json()).then(data => {
             if (data.status === 200)
                 location.reload();
+
             else
                 alert(data.err_msg)
         })

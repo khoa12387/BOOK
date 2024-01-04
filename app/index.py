@@ -80,6 +80,22 @@ def register():
             err_msg = "Mật Khẩu không khớp"
     return render_template('/register.html', err_msg=err_msg)
 
+@app.route('/admin/nhapsach', methods=['GET', 'POST'])
+def add_product():
+    if request.method == 'POST':
+        name = request.form['name']
+        price = float(request.form['price'])
+        image = request.form['image']
+        active = 'active' in request.form  # Kiểm tra xem checkbox được chọn hay không
+        category_id = int(request.form['category_id'])
+        quantity = int(request.form['quantity'])
+
+        dao.add_product(name,price,image,active,category_id,quantity)
+
+        return redirect('/admin/book') # Chuyển hướng sau khi thêm sản phẩm thành công
+
+    return render_template('book.html')
+
 @app.route("/cart")
 def cart():
     return render_template('cart.html')

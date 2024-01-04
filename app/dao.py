@@ -70,7 +70,9 @@ def add_user(name,username,password,avatar):
 
 
 def Report_frequency(kw=None):
-    query = db.session.query(Product.id, Product.name, func.sum(ReceiptDetails.price*ReceiptDetails.quantity),func.count(Product.id) ,func.sum(Product.id))\
+
+
+    query = db.session.query(Product.id, Product.name, func.sum(ReceiptDetails.price*ReceiptDetails.quantity), func.sum(ReceiptDetails.quantity))\
                      .join(ReceiptDetails, ReceiptDetails.product_id == Product.id).group_by(Product.id)
     if kw:
         query = query.filter(Product.name.contains(kw))
@@ -105,6 +107,11 @@ def get_product_by_id(id):
 def count_products_by_cate():
     return db.session.query(Category.id, Category.name, func.count(Product.id))\
                      .join(Product, Product.category_id == Category.id, isouter=True).group_by(Category.id).all()
+
+def add_product(name, price, image, active, category_id, quantity):
+    p = Product(name=name, image=image, active=active, category_id=category_id, quantity=quantity)
+    db.session.add(p)
+    db.session.commit()
 
 if __name__ == '__main__':
     with app.app_context():

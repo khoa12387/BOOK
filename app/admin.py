@@ -21,7 +21,7 @@ class AuthenticatedUser(BaseView):
 
 
 class MyProductView(AuthenticatedAdmin):
-    column_list = ['id', 'name', 'price', 'active']
+    column_list = ['id', 'name', 'price','quantity','active']
     column_searchable_list = ['name']
     column_filters = ['name', 'price']
     column_editable_list = ['name', 'price']
@@ -29,8 +29,15 @@ class MyProductView(AuthenticatedAdmin):
     edit_modal = True
 
 
+
 class MyCategoryView(AuthenticatedAdmin):
     column_list = ['id', 'name', 'products']
+    column_searchable_list = ['name']
+    column_filters = ['name' ]
+    column_editable_list = ['name']
+    create_modal = True
+    edit_modal = True
+
 
 
 class StatsView(AuthenticatedUser):
@@ -53,6 +60,19 @@ class MyAdminIndex(AdminIndexView):
     def index(self):
         return self.render('admin/index.html', stats=dao.count_products_by_cate())
 
+class Book(AuthenticatedUser):
+    @expose("/")
+    def index(self):
+        return self.render('admin/book.html')
+
+class QuiDinh(AuthenticatedUser):
+    @expose("/")
+    def index(self):
+        return self.render('admin/rule.html')
+
+
+admin.add_view(Book(name='Nhập sách'))
+admin.add_view(QuiDinh(name='Quy định'))
 admin.add_view(MyCategoryView(Category, db.session))
 admin.add_view(MyProductView(Product, db.session))
 admin.add_view(StatsView(name='Thông kê báo cáo'))
