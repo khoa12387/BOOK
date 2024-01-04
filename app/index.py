@@ -4,8 +4,28 @@ from flask import render_template, request, redirect, jsonify, session, url_for
 import dao
 import utils
 from app import app, login
-from flask_login import login_user, logout_user
+from flask_login import login_user, logout_user, login_required
+from app.models import UserRoleEnum
 
+
+@app.route('/products/<id>')
+def details(id):
+    comments = dao.get_comments_by_prod_id(id)
+    return render_template('details.html', product=dao.get_product_by_id(id), comments=comments)
+
+
+@app.route("/api/products/<id>/comments", methods=['post'])
+@login_required
+def add_comment(id):
+    content = request.json.get('content')
+
+    try:
+        c = dao.add_comment(product_id=id, content=content)
+    except:
+        return jsonify({'status': 500, 'err_msg': 'Hệ thống đang có lỗi!'})
+    else:
+
+        return jsonify({'status': 200, "c": {'content': c.content, "user": {"avatar": c.user.avatar}}})
 
 @app.route("/")
 def index():
@@ -25,9 +45,10 @@ def index():
 def login_admin():
     username = request.form.get('username')
     password = request.form.get('password')
+    user_role = UserRoleEnum.ADMIN
 
-    user = dao.auth_user(username=username, password=password)
-    if user:
+    user = dao.auth_user(username=username, password=password, user_role=user_role)
+    if user and user.user_role == UserRoleEnum.ADMIN:
         login_user(user)
 
     return redirect('/admin')
@@ -58,11 +79,6 @@ def register():
         else:
             err_msg = "Mật Khẩu không khớp"
     return render_template('/register.html', err_msg=err_msg)
-
-
-
-
-
 
 @app.route("/cart")
 def cart():
@@ -145,9 +161,10 @@ def login_view():
     if request.method.__eq__('POST'):
         username = request.form.get('username')
         password = request.form.get('password')
+        user_role = UserRoleEnum.USER
 
-        user = dao.auth_user(username=username, password=password)
-        if user:
+        user = dao.auth_user(username=username, password=password, user_role=user_role)
+        if user and user_role == UserRoleEnum.USER:
             login_user(user)
 
         next = request.args.get('next')

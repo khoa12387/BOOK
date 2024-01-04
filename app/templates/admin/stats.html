@@ -1,6 +1,121 @@
 {% extends 'admin/master.html' %}
 
 {% block body %}
-<h1 class="text-center text-info">THÔNG KÊ VÀ BÁO CÁO</h1>
+<section style="background: linear-gradient(to left, rgba(14, 111, 164, 0), rgb(22, 132, 138));font-family: 'Poppins', sans-serif;    text-transform: capitalize">
+    <h1 class="text-center text-danger">THỐNG KÊ BÁO CÁO</h1>
 
+    <div class="row">
+        <div class="col-md-5">
+            <table class="table">
+                <tr>
+                    <th>Id</th>
+                    <th>Tên</th>
+                    <th>Doanh thu</th>
+                    <th>Tần Suất</th>
+                    <th>Tỷ Lệ</th>
+                </tr>
+                {% for s in stats %}
+                <tr>
+                    <td>{{s[0]}}</td>
+                    <td>{{s[1]}}</td>
+                    <td>{{"{:,.0f}".format(s[2])}} VNĐ</td>
+                    <td>{{s[3]}}</td>
+                    <td>{{s[4]}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-md-7">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-5">
+            <table class="table">
+                <tr>
+                    <th>Id</th>
+                    <th>Thể loại Sách</th>
+                    <th>Doanh thu</th>
+                    <th>Số Lượt Thuê</th>
+                    <th>Tỷ Lệ</th>
+                </tr>
+                {% for s in month_stats %}
+                <tr>
+                    <td>{{s[0]}}</td>
+                    <td>{{"{:,.0f}".format(s[1])}} VNĐ</td>
+                    <td>{{s[2]}}</td>
+
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-md-7">
+            <canvas id="myChart2"></canvas>
+        </div>
+    </div>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let data = [];
+    let mData = [];
+    let labels = [];
+    let mLabels = [];
+
+    {% for c in stats %}
+    data.push({{c[2]}})
+    labels.push('{{c[1]}}')
+    {% endfor %}
+
+
+    {% for c in month_stats %}
+    mData.push({{c[1]}})
+    mLabels.push({{c[0]}})
+    {% endfor %}
+
+    window.onload = function() {
+        const ctx = document.getElementById('myChart');
+        const ctx2 = document.getElementById('myChart2');
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '# Doanh thu',
+            data: data,
+            borderWidth: 1,
+            backgroundColor: ['red', 'green', 'blue', 'gold', 'green']
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+
+      new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: mLabels,
+          datasets: [{
+            label: '# Doanh thu',
+            data: mData,
+            borderWidth: 1,
+            backgroundColor: ['red', 'green', 'blue', 'gold', 'green']
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+</script>
 {% endblock %}
