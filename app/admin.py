@@ -27,6 +27,7 @@ class MyProductView(AuthenticatedAdmin):
     column_editable_list = ['name', 'price']
     create_modal = True
     edit_modal = True
+    can_create = False
 
 
 
@@ -44,9 +45,9 @@ class StatsView(AuthenticatedUser):
     @expose("/")
     def index(self):
         kw = request.args.get("kw")
-        return self.render('admin/stats.html',
+        return self.render('admin/reports.html',
                            stats=dao.Report_frequency(kw),
-                           month_stats=dao.revenue_stats_by_month())
+                           month_stats=dao.revenue_month(2024))
 
 
 class LogoutView(AuthenticatedUser):

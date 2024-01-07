@@ -1,11 +1,36 @@
 import math
+from functools import wraps
 
 from flask import render_template, request, redirect, jsonify, session, url_for
 import dao
 import utils
-from app import app, login
-from flask_login import login_user, logout_user, login_required
-from app.models import UserRoleEnum
+from app import app, login, db
+from flask_login import login_user, logout_user, login_required, user_logged_out, user_login_confirmed, current_user, \
+    fresh_login_required
+from app.models import UserRoleEnum, User
+
+
+def user_login_confirmed(func): # Định nghĩa hàm user_login_confirmed
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if current_user.is_authenticated:
+            return redirect('/')
+        else:
+            return func(*args, **kwargs)
+    return wrapper
+
+def user_logged_out(func): # Định nghĩa hàm user_logged_out
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for('login_view'))
+        else:
+            return func(*args, **kwargs)
+    return wrapper
+
+
+
+
 
 
 @app.route('/products/<id>')
@@ -41,6 +66,7 @@ def index():
     return render_template('index.html',
                            products=prods, pages=math.ceil(num/page_size))
 
+
 @app.route('/admin/login', methods=['post'])
 def login_admin():
     username = request.form.get('username')
@@ -53,7 +79,9 @@ def login_admin():
 
     return redirect('/admin')
 
+
 @app.route('/LogOut')
+@user_logged_out
 def LogOut():
     logout_user()
     return redirect(url_for('login_view'))
@@ -80,6 +108,7 @@ def register():
             err_msg = "Mật Khẩu không khớp"
     return render_template('/register.html', err_msg=err_msg)
 
+
 @app.route('/admin/nhapsach', methods=['GET', 'POST'])
 def add_product():
     if request.method == 'POST':
@@ -89,12 +118,28 @@ def add_product():
         active = 'active' in request.form  # Kiểm tra xem checkbox được chọn hay không
         category_id = int(request.form['category_id'])
         quantity = int(request.form['quantity'])
+        email= request.form['email']
+        sdt = int(request.form['sdt'])
 
-        dao.add_product(name,price,image,active,category_id,quantity)
+
+        dao.add_product(name,price,image,active,category_id,quantity,email,sdt)
 
         return redirect('/admin/book') # Chuyển hướng sau khi thêm sản phẩm thành công
 
     return render_template('book.html')
+
+@app.route('/admin/quidinh', methods=['GET', 'POST'])
+def edit_rule():
+    if request.method == 'POST':
+        minQuantity = request.form['minQuantity']
+        minQuantityInStorage = request.form['minQuantityInStorage']
+
+        dao.edit_rule(minQuantity, minQuantityInStorage)
+
+        return redirect('/admin/rule')
+
+    return render_template('rule.html')
+
 
 @app.route("/cart")
 def cart():
@@ -173,6 +218,7 @@ def pay():
 
 
 @app.route('/login', methods=['get', 'post'])
+@user_login_confirmed
 def login_view():
     if request.method.__eq__('POST'):
         username = request.form.get('username')
@@ -191,9 +237,7 @@ def login_view():
 
     return render_template('login.html')
 
-@app.route('/employee')
-def employee():
-    return render_template("/employee/index.html")
+
 
 @app.context_processor
 def common_responses():
