@@ -1,13 +1,12 @@
 import math
 from functools import wraps
 
-from flask import render_template, request, redirect, jsonify, session, url_for
+from flask import render_template, request, redirect, jsonify, session, url_for, flash
 import dao
 import utils
 from app import app, login, db
-from flask_login import login_user, logout_user, login_required, user_logged_out, user_login_confirmed, current_user, \
-    fresh_login_required
-from app.models import UserRoleEnum, User
+from flask_login import login_user, logout_user, login_required, user_logged_out, user_login_confirmed, current_user, fresh_login_required
+from app.models import UserRoleEnum, User, Rule
 
 
 def user_login_confirmed(func): # Định nghĩa hàm user_login_confirmed
@@ -29,14 +28,10 @@ def user_logged_out(func): # Định nghĩa hàm user_logged_out
     return wrapper
 
 
-
-
-
-
 @app.route('/products/<id>')
 def details(id):
     comments = dao.get_comments_by_prod_id(id)
-    return render_template('details.html', product=dao.get_product_by_id(id), comments=comments)
+    return render_template('details.html',UserRoleEnum=UserRoleEnum, product=dao.get_product_by_id(id), comments=comments)
 
 
 @app.route("/api/products/<id>/comments", methods=['post'])
@@ -64,7 +59,7 @@ def index():
     page_size = app.config['PAGE_SIZE']
 
     return render_template('index.html',
-                           products=prods, pages=math.ceil(num/page_size))
+                           products=prods, pages=math.ceil(num/page_size), UserRoleEnum=UserRoleEnum)
 
 
 @app.route('/admin/login', methods=['post'])
@@ -78,7 +73,6 @@ def login_admin():
         login_user(user)
 
     return redirect('/admin')
-
 
 @app.route('/LogOut')
 @user_logged_out
@@ -118,32 +112,37 @@ def add_product():
         active = 'active' in request.form  # Kiểm tra xem checkbox được chọn hay không
         category_id = int(request.form['category_id'])
         quantity = int(request.form['quantity'])
-        email= request.form['email']
-        sdt = int(request.form['sdt'])
 
-
-        dao.add_product(name,price,image,active,category_id,quantity,email,sdt)
+        rule = Rule.query.first()
+        minQuantity = rule.minQuantity if rule else None
+        if quantity < minQuantity:
+            flash("Số lượng không hợp lệ", "error")
+            #return render_template('book.html')
+        else:
+            flash("Thành công", "success")
+            dao.add_product(name,price,image,active,category_id,quantity)
 
         return redirect('/admin/book') # Chuyển hướng sau khi thêm sản phẩm thành công
 
     return render_template('book.html')
 
 @app.route('/admin/quidinh', methods=['GET', 'POST'])
-def edit_rule():
+def rule():
     if request.method == 'POST':
         minQuantity = request.form['minQuantity']
         minQuantityInStorage = request.form['minQuantityInStorage']
 
         dao.edit_rule(minQuantity, minQuantityInStorage)
-
+        flash("Thành công", "success")
         return redirect('/admin/rule')
 
     return render_template('rule.html')
 
 
+
 @app.route("/cart")
 def cart():
-    return render_template('cart.html')
+    return render_template('cart.html', UserRoleEnum=UserRoleEnum)
 
 
 @app.route("/api/cart", methods=['post'])
@@ -223,10 +222,14 @@ def login_view():
     if request.method.__eq__('POST'):
         username = request.form.get('username')
         password = request.form.get('password')
-        user_role = UserRoleEnum.USER
+        role_selected = request.form.get('user_role')
+        if role_selected == 'admin':
+            user_role = UserRoleEnum.ADMIN
+        else:
+            user_role = UserRoleEnum.USER
 
         user = dao.auth_user(username=username, password=password, user_role=user_role)
-        if user and user_role == UserRoleEnum.USER:
+        if user:
             login_user(user)
 
         next = request.args.get('next')
@@ -235,7 +238,7 @@ def login_view():
 
         return redirect("/")
 
-    return render_template('login.html')
+    return render_template('login.html', UserRoleEnum=UserRoleEnum)
 
 
 

@@ -63,7 +63,7 @@
    overflow-x: hidden; }
 </style>
 <div id="wrapper" style="padding-left: 350px">
-    <form action="{{ url_for('edit_rule') }}" method="post" enctype="multipart/form-data" action="" id="form-login">
+        <form action="{{ url_for('rule') }}" method="post" enctype="multipart/form-data" action="" id="form-login">
         <h1 class="form-heading">Form chỉnh sửa qui định</h1>
         <div class="form-group">
             <i class="far fa-user"></i>
@@ -76,8 +76,10 @@
             <input type="number" class="form-input" id="minQuantityInStorage" placeholder="Số lượng tồn tối thiểu"
                    name="minQuantityInStorage">
         </div>
-        <input type="submit" value="Đăng Ký" class="form-submit">
+        <input type="submit" value="Thay đổi" class="form-submit">
     </form>
 </div>
-
+<script>
+    var minQuantity = document.getElementById("minQuantity").value;
+</script>
 {% endblock %}

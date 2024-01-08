@@ -78,17 +78,18 @@ class ReceiptDetails(BaseModel):  # kế thừa BaseModel và lớp của chi ti
     product_id = Column(Integer, ForeignKey(Product.id), nullable=False)
 
 
-class Interaction(BaseModel):  # kế thừa BaseModel và liên kết 2 khoá ngoại
-    __abstract__ = True
+# class Interaction(BaseModel):  # kế thừa BaseModel và liên kết 2 khoá ngoại
+#     __abstract__ = True
+#
+#     product_id = Column(Integer, ForeignKey(Product.id), nullable=False)
+#     user_id = Column(Integer, ForeignKey(User.id), nullable=False)
 
-    product_id = Column(Integer, ForeignKey(Product.id), nullable=False)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
 
-
-class Comment(Interaction): # kế thừa lớp interaction và là lớp bình luận
+class Comment(BaseModel): # kế thừa lớp interaction và là lớp bình luận
     content = Column(String(255), nullable=False)
     created_date = Column(DateTime, default=datetime.now())
-
+    product_id = Column(Integer, ForeignKey(Product.id), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
 
 if __name__ == '__main__':
     with app.app_context():

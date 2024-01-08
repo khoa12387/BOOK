@@ -2,19 +2,23 @@
 
         <nav class="navbar navbar-expand-sm bg-dark navbar-dark " style=" float:left; align-items:start   " >
             <div class="container-fluid nav flex-column " style="align-items:start  ">
-                <a class="navbar-brand" href="#">BÁN HÀNG TRỰC TUYẾN</a>
+                <a class="navbar-brand" href="/">BÁN HÀNG TRỰC TUYẾN</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#collapsibleNavbar">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div  class="collapse navbar-collapse flex-column " id="collapsibleNavbar"  >
                     <ul class="navbar-nav me-auto nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="/">Trang chủ</a>
-                        </li>
-                          <li class="nav-item">
-                            <a class="nav-link active" href="/admin">Trang Quản Trị</a>
-                        </li>
+<!--                        <li class="nav-item">-->
+<!--                            <a class="nav-link active" href="/admin">Trang Quản Trị</a>-->
+<!--                        </li>-->
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.user_role == UserRoleEnum.ADMIN %}
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="/admin">Trang Quản Trị</a>
+                                </li>
+                            {% endif %}
+                        {% endif %}
                         {% for c in categories %}
                         <li class="nav-item">
                             <a class="nav-link" href="/?cate_id={{c.id}}">{{ c.name }}</a>

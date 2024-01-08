@@ -43,7 +43,8 @@ def get_user_by_id(user_id):
 def auth_user(username, password, user_role):
     password = str(hashlib.md5(password.encode('utf-8')).hexdigest())
     return User.query.filter(User.username.__eq__(username),
-                             User.password.__eq__(password)).first()
+                             User.password.__eq__(password),
+                             User.user_role.__eq__(user_role)).first()
 
 
 def add_receipt(cart):
