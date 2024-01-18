@@ -1,22 +1,91 @@
 {% extends 'admin/master.html' %}
 
 {% block body %}
-<section style="background: linear-gradient(to left, rgba(14, 111, 164, 0), rgb(22, 132, 138));font-family: 'Poppins', sans-serif;    text-transform: capitalize">
-    <h1 class="text-center text-danger">THỐNG KÊ BÁO CÁO</h1>
 
-    <div class="row">
+
+
+<style>
+     section {
+            background: linear-gradient(to left, rgba(14, 111, 164, 0), rgb(22, 132, 138));
+            font-family: 'Poppins', sans-serif;
+            text-transform: capitalize;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #dc3545;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            text-align: center;
+        }
+
+
+        form {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-group select {
+            flex: 1;
+        }
+
+        .form-group button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .row {
+            margin-bottom: 20px;
+        }
+    section {
+            background: linear-gradient(to left, rgba(14, 111, 164, 0), rgb(22, 132, 138));
+            font-family: 'Poppins', sans-serif;
+            text-transform: capitalize;
+        }
+</style>
+
+<section>
+    <h1 class="text-center text-danger">THỐNG KÊ BÁO CÁO</h1>
+    <form action="#" method="GET" class="form">
+        <div class="form-group">
+            <label for="month">Chọn tháng:</label>
+            <select name="month" id="month" class="form-control" onchange="handleChange(getSelectedMonth())">
+                {% for i in range(1, 13) %}
+                <option value="{{i}}" {% if i== selectedMonth %} selected {% endif %}>Tháng {{i}}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Tra cứu</button>
+        </div>
+    </form>
+
+    <div class="row" id="stats-container">
         <div class="col-md-5">
             <table class="table">
-
                 <tr>
                     <th>Id</th>
                     <th>Tên</th>
                     <th>Doanh thu</th>
-                     <th>Số Lượng</th>
+                    <th>Số Lượng</th>
                     <th>Tần Suất</th>
-                    <th>Tỷ Lệ(%)</th>
                 </tr>
-                 <h1> Doanh Thu Theo Tần Suất</h1>
+                <h1> Doanh Thu Theo Tần Suất</h1>
                 {% for s in stats %}
                 <tr>
                     <td>{{s[0]}}</td>
@@ -24,18 +93,16 @@
                     <td>{{"{:,.0f}".format(s[2])}} VNĐ</td>
                     <td>{{s[3]}}</td>
                     <td>{{s[4]}}</td>
-                    <td>{{s[5]}}</td>
                 </tr>
                 {% endfor %}
             </table>
         </div>
-        <div class="col-md-7"  >
-            <canvas id="myChart" ></canvas>
+        <div class="col-md-7">
+            <canvas id="myChart"></canvas>
         </div>
     </div>
 
-    <div class="row">
-
+    <div class="row" id="chart-container">
         <div class="col-md-5">
             <table class="table">
                 <tr>
@@ -43,17 +110,14 @@
                     <th>Thể loại Sách</th>
                     <th>Doanh thu</th>
                     <th>Số Lượt Bán</th>
-                     <th>Tỷ Lệ(%)</th>
                 </tr>
-                <h1> Doanh Thu Tháng 1</h1>
+                <h1> Doanh Thu Tháng </h1>
                 {% for s in month_stats %}
                 <tr>
                     <td>{{s[0]}}</td>
                     <td>{{s[1]}}</td>
                     <td>{{"{:,.0f}".format(s[3])}} VNĐ</td>
-                    <td>{{s[4]}}</td>
-                    <td>{{s[5]}} </td>
-
+                    <td>{{s[4]}} </td>
                 </tr>
                 {% endfor %}
             </table>
@@ -63,7 +127,10 @@
         </div>
     </div>
 </section>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
     let data = [];
     let mData = [];
@@ -73,43 +140,42 @@
     {% for s in stats %}
         data.push({{ s[2] }}); // Chọn chỉ số tương ứng với cột 'Doanh thu'
         labels.push('{{ s[1] }}'); // Chọn chỉ số tương ứng với cột 'Tên'
-
     {% endfor %}
 
     {% for s in month_stats %}
-        mData.push({{ s[4] }}); 
+        mData.push({{ s[4] }});
         mLabels.push('{{ s[1] }}'); // Chọn chỉ số tương ứng với cột 'Tên thể loại'
-
     {% endfor %}
 
-    window.onload = function() {
+
+
+    window.onload = function () {
         const ctx = document.getElementById('myChart');
         const ctx2 = document.getElementById('myChart2');
 
-      new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: labels,
-        datasets: [{
-            label: '# Doanh thu',
-            data: data,
-            borderWidth: 1,
-            backgroundColor: ['rgba(0, 0.1, 0, 0.4)', 'rgba(1, 1, 1)'],
-        }],
-    },
-    options: {
-        scales: {
-            y: {
-                beginAtZero: true,
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '# Doanh thu',
+                    data: data,
+                    borderWidth: 1,
+                    backgroundColor: ['rgba(0, 0.1, 0, 0.4)', 'rgba(1, 1, 1)'],
+                }],
             },
-        },
-        // Điều chỉnh chiều cao của biểu đồ
-        maintainAspectRatio: false, // Cho phép điều chỉnh tỷ lệ khung hình
-        responsive: true, // Cho phép biểu đồ thích ứng với kích thước của khung chứa
-        aspectRatio: 1.5, // Tùy chỉnh tỷ lệ chiều rộng so với chiều cao
-        height: 400, // Điều chỉnh chiều cao của biểu đồ (trong pixel)
-    },
-});
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+                maintainAspectRatio: false,
+                responsive: true,
+                aspectRatio: 1.5,
+                height: 400,
+            },
+        });
 
         new Chart(ctx2, {
             type: 'pie',
@@ -119,7 +185,7 @@
                     label: '# Doanh thu',
                     data: mData,
                     borderWidth: 1,
-                    backgroundColor: ['rgba(0, 0.1, 0, 0.4)','rgba(1,1,1)']
+                    backgroundColor: ['rgba(0, 0.1, 0, 0.4)','rgba(1,1,1)'],
                 }]
             },
             options: {

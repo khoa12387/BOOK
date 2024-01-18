@@ -1,0 +1,67 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Giỏ hàng{% endblock %}
+
+{% block content %}
+
+<div class="container">
+		<div class="card">
+			<div class="container-fliud">
+				<div class="wrapper row">
+					<div class="preview col-md-6">
+
+						<div class="preview-pic tab-content">
+						  <div class="tab-pane active" id="pic-1"><img src="{{product.image}}" /></div>
+						  <div class="tab-pane" id="pic-2"><img src="{{product.image}}" /></div>
+						  <div class="tab-pane" id="pic-3"><img src="{{product.image}}" /></div>
+						  <div class="tab-pane" id="pic-4"><img src="{{product.image}}" /></div>
+						  <div class="tab-pane" id="pic-5"><img src="{{product.image}}"/></div>
+						</div>
+						<ul class="preview-thumbnail nav nav-tabs">
+						  <li class="active"><a data-target="#pic-1" data-toggle="tab"><img src="{{product.image}}" /></a></li>
+						  <li><a data-target="#pic-2" data-toggle="tab"><img src="{{product.image}}" /></a></li>
+						  <li><a data-target="#pic-3" data-toggle="tab"><img src="{{product.image}}" /></a></li>
+						  <li><a data-target="#pic-4" data-toggle="tab"><img src="{{product.image}}" /></a></li>
+						  <li><a data-target="#pic-5" data-toggle="tab"><img src="{{product.image}}" /></a></li>
+						</ul>
+
+					</div>
+					<div class="details col-md-6">
+						<h3 class="product-title">{{product.name}}</h3>
+						<div class="rating">
+							<div class="stars">
+								<span class="fa fa-star checked"></span>
+								<span class="fa fa-star checked"></span>
+								<span class="fa fa-star checked"></span>
+								<span class="fa fa-star"></span>
+								<span class="fa fa-star"></span>
+							</div>
+							<span class="review-no">41 reviews</span>
+						</div>
+						<p class="product-description"> Mỗi cuốn sách mà chúng ta đọc được ở đây đều mang một ý nghĩa sâu sắc và nó mang một nguồn cảm hứng mới cho chúng ta </p>
+						<h4 class="price">Giá Hiện Tại: <span>{{product.price}} VNĐ</span></h4>
+						<p class="vote"><strong>91%</strong> of buyers enjoyed this product! <strong>(87 votes)</strong></p>
+
+						<div class="action">
+							<button class="add-to-cart btn btn-default" type="button"><a href="javascript:;" onclick="addToCart({{product.id}}, '{{product.name}}', {{product.price}})" >add to cart</a></button>
+							<button class="like btn btn-default" type="button"><span class="fa fa-heart"></span></button>
+						</div>
+
+
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment-with-locales.min.js"></script>
+<script>
+    window.onload = function() {
+        let dates = document.getElementsByClassName("my-date");
+        for (let d of dates)
+            d.innerText = moment(d.innerText).locale("vi").fromNow();
+    }
+</script>
+{% endblock %}

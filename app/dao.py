@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 from sqlalchemy import func, extract, desc
-from sqlalchemy.orm import joinedload
 
 from app.models import Category, Product, User, Receipt, ReceiptDetails, UserRoleEnum, Comment, Rule
 from app import app, db
@@ -73,37 +72,40 @@ def add_user(name, username, password, avatar, quantity, email, sdt):
     db.session.commit()
 
 
-def Report_frequency(kw=None):
+def Report_frequency(month=None):
     # Tính ngày đầu tiên và cuối cùng của tháng hiện tại
-    today = datetime.today()
-    first_day_of_month = today.replace(day=1)
-    last_day_of_month = (today.replace(month=today.month % 12 + 1, day=1) - timedelta(days=1)).replace(hour=23,
-                                                                                                       minute=59,
-                                                                                                       second=59)
+    try:
+        # Tính ngày đầu tiên và cuối cùng của tháng hiện tại
+        if month is None:
+            today = datetime.today()
+            first_day_of_month = today.replace(day=1)
+            last_day_of_month = (today.replace(month=today.month % 12 + 1, day=1) - timedelta(days=1)).replace(
+                hour=23, minute=59, second=59)
 
-    # Query thông tin mã sản phẩm, tên sản phẩm, doanh thu, tần suất và tỷ lệ của sản phẩm trong tháng
-    query = db.session.query(
-        Product.id,
-        Product.name,
-        func.sum(ReceiptDetails.price * ReceiptDetails.quantity).label('revenue'),
-        func.sum(ReceiptDetails.quantity).label('total_quantity'),
-        func.count(Receipt.id).label('frequency'),
-        func.round(func.count(Receipt.id) / (
-                func.extract('day', func.timestamp(last_day_of_month)) - func.extract('day', func.timestamp(
-            first_day_of_month))) + 1, 2).label('rate'),
-    ).join(ReceiptDetails, ReceiptDetails.product_id == Product.id) \
-        .join(Receipt, ReceiptDetails.receipt_id == Receipt.id) \
-        .filter(Receipt.created_date >= first_day_of_month, Receipt.created_date <= last_day_of_month) \
-        .group_by(Product.id)
+        # Query thông tin mã sản phẩm, tên sản phẩm, doanh thu, tần suất và tỷ lệ của sản phẩm trong tháng
+        query = db.session.query(
+            Product.id,
+            Product.name,
+            func.sum(ReceiptDetails.price * ReceiptDetails.quantity).label('revenue'),
+            func.sum(ReceiptDetails.quantity).label('total_quantity'),
+            func.count(Receipt.id).label('frequency'),
+        ).join(ReceiptDetails, ReceiptDetails.product_id == Product.id) \
+            .join(Receipt, ReceiptDetails.receipt_id == Receipt.id)
 
+        if month is not None:
+            # Nếu month không phải None, áp dụng điều kiện lọc theo tên sản phẩm
+            query = query.filter(Product.name.contains(month))
 
-    if kw:
-        query = query.filter(Product.name.contains(kw)).all()
+        query = query.filter(Receipt.created_date >= first_day_of_month, Receipt.created_date <= last_day_of_month) \
+            .group_by(Product.id) \
+            .order_by(desc(func.sum(ReceiptDetails.quantity)))
 
-    query = query.order_by(desc(func.sum(ReceiptDetails.quantity)))
-    result = query.all()
+        result = query.all()
+        return result
 
-    return result
+    except Exception as e:
+        print("Lỗi truy vấn:", str(e))
+        return None  # Hoặc thực hiện xử lý lỗi phù hợp với ứng dụng của bạn
 
 def revenue_month(year=2024):
     result = db.session.query(
@@ -112,9 +114,6 @@ def revenue_month(year=2024):
         func.extract('month', Receipt.created_date).label('Tháng'),
         func.sum(ReceiptDetails.price * ReceiptDetails.quantity).label('Doanh Thu'),
         func.sum(ReceiptDetails.quantity).label('total_quantity'),
-        func.round(
-            (func.count(Receipt.id) /
-            func.extract('day', func.last_day(func.max(Receipt.created_date))) + 1),2).label('Tỷ Lệ Bán'),
       ).join(Receipt, ReceiptDetails.receipt_id == Receipt.id)\
      .join(Product, ReceiptDetails.product_id == Product.id)\
      .join(Category, Category.id == Product.category_id)\

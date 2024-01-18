@@ -1,11 +1,13 @@
 import math
+from datetime import datetime, timedelta
 from functools import wraps
+from os import abort
 
 from flask import render_template, request, redirect, jsonify, session, url_for, flash
-import dao
-import utils
-from app import app, login, db
+from app import app, login, db, dao, utils
 from flask_login import login_user, logout_user, login_required, user_logged_out, user_login_confirmed, current_user, fresh_login_required
+
+from app.dao import Report_frequency
 from app.models import UserRoleEnum, User, Rule
 
 
@@ -22,9 +24,11 @@ def user_logged_out(func): # Định nghĩa hàm user_logged_out
     @wraps(func)
     def wrapper(*args, **kwargs):
         if not current_user.is_authenticated:
+
             return redirect(url_for('login_view'))
         else:
             return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -62,17 +66,22 @@ def index():
                            products=prods, pages=math.ceil(num/page_size), UserRoleEnum=UserRoleEnum)
 
 
-@app.route('/admin/login', methods=['post'])
+
+@app.route('/admin/login', methods=['GET', 'POST'])
 def login_admin():
-    username = request.form.get('username')
-    password = request.form.get('password')
-    user_role = UserRoleEnum.ADMIN
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user_role = UserRoleEnum.ADMIN
 
-    user = dao.auth_user(username=username, password=password, user_role=user_role)
-    if user and user.user_role == UserRoleEnum.ADMIN:
-        login_user(user)
+        user = dao.auth_user(username=username, password=password, user_role=user_role)
 
-    return redirect('/admin')
+        if user and user.user_role == UserRoleEnum.ADMIN:
+            login_user(user)
+            return redirect('/admin/book')  # Điều hướng đến trang admin_dashboard
+    
+    return redirect('/admin/')
+
 
 @app.route('/LogOut')
 @user_logged_out
@@ -253,8 +262,39 @@ def common_responses():
 @login.user_loader
 def load_user(user_id):
     return dao.get_user_by_id(user_id)
+@app.route('/admin/reports', methods=['GET', 'POST'])
+def report():
+    try:
+        today = datetime.today()
 
 
+        first_day_of_month = today.replace(day=1)
+
+        if request.method == 'GET':
+            # Xử lý yêu cầu GET
+            month = request.args.get('month', today.month)
+        elif request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Xử lý yêu cầu POST qua Ajax
+            data = request.get_json()
+            month = data.get('month', today.month)
+        else:
+            return abort(400)  # Xử lý các trường hợp khác
+
+        month = int(month)
+
+        # Gọi hàm Report_frequency với tháng đã chọn
+        result = Report_frequency(month=month)
+
+        if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Trả về dữ liệu JSON nếu là yêu cầu AJAX
+            return jsonify(result=result)
+
+        # Truyền kết quả vào template HTML
+        return render_template('reports.html', result=result, selected_month=month)
+
+    except Exception as e:
+        print("Lỗi máy chủ:", str(e))
+        return jsonify(error=str(e)), 500  # Trả về thông báo lỗi và mã trạng thái 500
 if __name__ == '__main__':
     from app import admin
     app.run(debug=True)
